@@ -1,6 +1,6 @@
 import os
 import time
-import psycopg2
+import psycopg
 from flask_migrate import Migrate, upgrade, init, migrate
 from app import create_app, db, Config
 

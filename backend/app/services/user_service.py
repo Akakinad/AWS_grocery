@@ -227,22 +227,21 @@ def sync_basket_service(user_id: int, basket: List[Dict]) -> dict:
         current_app.logger.error(f"User with ID {user_id} not found.")
         return {"error": "User not found"}
 
-    existing_items = BasketItem.query.filter_by(user_id=user_id).all()
-    existing_product_ids = {item.product_id for item in existing_items}
+    existing_items = BasketItem.query.filter_by(user_id=int(user_id)).all()
     incoming_product_ids = {item['product_id'] for item in basket}
 
     items_to_delete = existing_product_ids - incoming_product_ids
     current_app.logger.info(f"Syncing basket for user {user_id}. Items to delete: {items_to_delete}")
 
     for product_id in items_to_delete:
-        item_to_delete = BasketItem.query.filter_by(user_id=user_id, product_id=product_id).first()
+        item_to_delete = BasketItem.query.filter_by(user_id=int(user_id), product_id=product_id).first()
         if item_to_delete:
             db.session.delete(item_to_delete)
             current_app.logger.info(f"Deleted item with product_id {product_id} for user {user_id}")
 
     for item in basket:
         product_id = item['product_id']
-        existing_item = BasketItem.query.filter_by(user_id=user_id, product_id=product_id).first()
+        existing_item = BasketItem.query.filter_by(user_id=int(user_id), product_id=product_id).first()
 
         if existing_item:
             existing_item.quantity = item['quantity']
@@ -272,7 +271,7 @@ def get_user_basket(user_id: int) -> List[Dict]:
     Returns:
         List[Dict]: The user's basket.
     """
-    basket_items = BasketItem.query.filter_by(user_id=user_id).all()
+    basket_items = BasketItem.query.filter_by(user_id=int(user_id)).all()
 
     basket_with_details = []
     for item in basket_items:
@@ -300,7 +299,7 @@ def remove_from_basket_service(user_id: int, product_id: int) -> dict:
     Returns:
         dict: A message indicating the result of the removal.
     """
-    basket_item = BasketItem.query.filter_by(user_id=user_id, product_id=product_id).first()
+    basket_item = BasketItem.query.filter_by(user_id=int(user_id), product_id=product_id).first()
     if basket_item:
         db.session.delete(basket_item)
         db.session.commit()
@@ -361,7 +360,7 @@ def clear_user_basket(user_id: int):
     """
     current_app.logger.info(f"Attempting to clear basket for user {user_id}.")
 
-    basket_items = BasketItem.query.filter_by(user_id=user_id).all()
+    basket_items = BasketItem.query.filter_by(user_id=int(user_id)).all()
 
     if not basket_items:
         current_app.logger.info(f"No items found in the basket for user {user_id}.")
